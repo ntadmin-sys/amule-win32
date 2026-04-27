@@ -22,7 +22,7 @@ git clone https://github.com/persmule/amule-dlp.git
 git clone --depth 1 https://github.com/maxmind/geoip-api-c.git
 git clone --branch gd-2.3.3 --depth 1 https://github.com/libgd/libgd.git
 
-wget https://boostorg.jfrog.io/artifactory/main/release/1.86.0/source/boost_1_86_0.7z -O boost.7z
+wget -O boost.7z https://sourceforge.net/projects/boost/files/boost/1.86.0/boost_1_86_0.7z/download
 wget https://ftp.gnu.org/gnu/libiconv/libiconv-${libiconv_version}.tar.gz
 wget https://ftp.gnu.org/gnu/gettext/gettext-${gettext_version}.tar.xz
 7z x boost.7z
