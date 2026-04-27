@@ -2,17 +2,25 @@
 
 set -e
 
-help_msg="Usage: ./scripts/gcc-mingw.sh -arch=[x86|x64]"
+help_msg="Usage: ./scripts/gcc-mingw.sh -arch=[x86|x64|x86_64]"
 
-if [ $# == 1 ]; then
-    if [ $1 == "-arch=x86" ]; then
+if [ $# -ne 1 ]; then
+    echo "$help_msg" >&2
+    exit 1
+fi
+
+case "$1" in
+    -arch=x86)
         arch=x86
-    elif [ $1 == "-arch=x64" ]; then
+        ;;
+    -arch=x64|-arch=x86_64)
         arch=x64
-    else
-        echo $help_msg
-        exit -1
-    fi
+        ;;
+    *)
+        echo "$help_msg" >&2
+        exit 1
+        ;;
+esac
 else
     echo $help_msg
     exit -1
