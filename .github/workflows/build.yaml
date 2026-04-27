@@ -5,7 +5,7 @@ on:
     tags:
       - 'v*'
   # 可选：添加 workflow_dispatch 以便手动测试
-  # workflow_dispatch:
+  workflow_dispatch:
 
 jobs:
   build-x86_64:
