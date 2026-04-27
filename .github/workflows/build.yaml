@@ -4,7 +4,8 @@ on:
   push:
     tags:
       - 'v*'
-  workflow_dispatch:   # 👈 允许手动运行
+  # 可选：添加 workflow_dispatch 以便手动测试
+  # workflow_dispatch:
 
 jobs:
   build-x86_64:
@@ -12,30 +13,30 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
 
-      - name: Docker Environment
+      - name: Set up Docker Environment
         run: docker build -f Dockerfile -t builder .
 
       - name: Cache MinGW GCC (x86_64)
         id: cache-mingw-gcc
-        uses: actions/cache@v3
+        uses: actions/cache@v4
         with:
           path: toolchain/mingw64
-          key: ${{ runner.os }}-mingw-gcc-x86_64
+          key: ${{ runner.os }}-mingw-gcc-x86_64-${{ hashFiles('scripts/gcc-mingw.sh') }}
 
       - name: Build MinGW GCC (x86_64)
         if: steps.cache-mingw-gcc.outputs.cache-hit != 'true'
         run: docker run --user $(id -u):$(id -g) --rm -t -v $PWD:/build builder sh -c "cd /build && ./scripts/gcc-mingw.sh -arch=x86_64"
 
-      - name: Get Source code
+      - name: Get Source Code
         run: docker run --user $(id -u):$(id -g) --rm -t -v $PWD:/build builder sh -c "cd /build && ./scripts/download_and_prepare.sh"
 
       - name: Build aMule (x86_64)
         run: docker run --user $(id -u):$(id -g) --rm -t -v $PWD:/build builder sh -c "cd /build && ./scripts/build-all.sh -arch=x86_64 -cc=gcc"
 
-      - name: Upload build artifacts
-        uses: actions/upload-artifact@v3
+      - name: Upload Build Artifact
+        uses: actions/upload-artifact@v4
         with:
           name: amule-windows-x86_64
           path: amule*x86_64*.7z
@@ -45,15 +46,15 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
 
-      - name: Docker Environment
+      - name: Set up Docker Environment
         run: docker build -f Dockerfile -t builder .
 
-      - name: Get Source code
+      - name: Get Source Code
         run: docker run --user $(id -u):$(id -g) --rm -t -v $PWD:/build builder sh -c "cd /build && ./scripts/download_and_prepare.sh"
 
-      - name: Prepare Clang ARM64 toolchain
+      - name: Prepare Clang ARM64 Toolchain
         run: |
           mkdir -p toolchain
           wget https://github.com/mstorsjo/llvm-mingw/releases/download/20240619/llvm-mingw-20240619-ucrt-ubuntu-20.04-x86_64.tar.xz
@@ -67,35 +68,35 @@ jobs:
             -v $PWD/toolchain/clang:/opt/clang:ro \
             builder sh -c "PATH=/opt/clang/bin:\$PATH cd /build && ./scripts/build-all.sh -arch=arm64 -cc=clang"
 
-      - name: Upload build artifacts
-        uses: actions/upload-artifact@v3
+      - name: Upload Build Artifact
+        uses: actions/upload-artifact@v4
         with:
           name: amule-windows-arm64
           path: amule*arm64*.7z
 
   release:
-    name: Release
+    name: Create Release
     needs: [build-x86_64, build-arm64]
     runs-on: ubuntu-latest
     if: startsWith(github.ref, 'refs/tags/')
     steps:
-      - name: Download all artifacts
-        uses: actions/download-artifact@v3
+      - name: Download All Artifacts
+        uses: actions/download-artifact@v4
         with:
           path: artifacts/
 
-      - name: Flatten artifacts
+      - name: Flatten and Verify Artifacts
         run: |
           mkdir -p release
           find artifacts/ -name "*.7z" -exec cp {} release/ \;
-          cd release && ls -la
+          ls -la release/
 
-      - name: Compute Hashes
+      - name: Compute SHA256 Checksums
         working-directory: release
         run: sha256sum *.7z > SHA256SUMS.txt
 
-      - name: Release
-        uses: softprops/action-gh-release@v1
+      - name: Publish Release
+        uses: softprops/action-gh-release@v2
         with:
           files: |
             release/*.7z
