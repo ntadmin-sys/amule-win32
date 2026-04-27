@@ -4,6 +4,7 @@ on:
   push:
     tags:
       - 'v*'
+  workflow_dispatch:   # 👈 允许手动运行
 
 jobs:
   build-x86_64:
