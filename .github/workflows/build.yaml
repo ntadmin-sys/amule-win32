@@ -4,8 +4,11 @@ on:
   push:
     tags:
       - 'v*'
-  # 可选：添加 workflow_dispatch 以便手动测试
   workflow_dispatch:
+
+# 启用 Node.js 24 运行时（提前适配 GitHub Actions 的未来默认环境）
+env:
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
 
 jobs:
   build-x86_64:
@@ -13,14 +16,14 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@v4.2.0
 
       - name: Set up Docker Environment
         run: docker build -f Dockerfile -t builder .
 
       - name: Cache MinGW GCC (x86_64)
         id: cache-mingw-gcc
-        uses: actions/cache@v4
+        uses: actions/cache@v4.2.0
         with:
           path: toolchain/mingw64
           key: ${{ runner.os }}-mingw-gcc-x86_64-${{ hashFiles('scripts/gcc-mingw.sh') }}
@@ -46,7 +49,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@v4.2.0
 
       - name: Set up Docker Environment
         run: docker build -f Dockerfile -t builder .
